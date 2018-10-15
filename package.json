@@ -1,0 +1,11 @@
+{
+  "name": "aurora-router",
+  "version": "1.0.0",
+  "description": "Router for Aurora MVC framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ItsJustMeChris",
+  "license": "gpl-3.0"
+}
