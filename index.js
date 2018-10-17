@@ -1,17 +1,26 @@
 var routes = [];
-var self = module.exports;
 
 exports.route = (route, method, action) => {
-    let trueRoute = route.match(".+?(?=\/:|$)");
-    trueRoute[0] = trueRoute[0].replace(/\/+$/, "");
-    routes[trueRoute] = { route: route, method: method, action: action };
+    let routeParamRegex = new RegExp(/(\:).*?(?=\/|\/|$)/g);
+    route = route.replace(/\/+$/, "");
+
+    let routeParams = route.match(routeParamRegex);
+    let regexRoute = route;
+
+    if (routeParams !== null) {
+        routeParams.forEach(element => {
+            regexRoute = regexRoute.replace(element, "(.*)");
+        });
+        routes.push({ regexRoute: regexRoute, route: route, method: method.toUpperCase(), action: action });
+    } else {
+        routes.push({ route: route, method: method.toUpperCase(), action: action });
+    }
 }
 
 exports.getRoutes = () => {
     return routes;
 }
 
-//Not Yet implemented
 exports.extractParams = (req, route) => {
 }
 
@@ -19,29 +28,29 @@ const disperse = (route, req, res) => {
     if (typeof route.action === "function") {
         return route.action(req, res);
     } else if (typeof route.action === "string") {
-        //return controller.action(req, res);
+
     } else if (typeof route.action === "undefined") {
-        //return fire router hooks (basically just a callback, so not really sure why its needed, but eh why not!)
+
     }
 }
 
-exports.router = (req, res) => {
+exports.handle = (req, res) => {
     req.url = req.url.replace(/\/+$/, "");
-    if (routes[req.url]) {
-        let r = routes[req.url];
-        if (r.method.toUpperCase() == req.method) {
-            return disperse(r, req, res);
-        }
-    } else {
-        for (r in routes) {
-            let reqParamCount = (req.url.replace(r, '').match(/(?<=\/).*?(?=\/|\/|$)/g) || []).length;
-            let routeParamCount = (routes[r].route.match(/(?<=\:).*?(?=\/|\/|$)/g) || []).length;
+    console.log(req.url);
+    //Try to match absolute routes
+    for (r in routes) {
+        let route = routes[r];
+        if (route.route == req.url && req.method == route.method)
+            return disperse(route, req, res);
+    }
 
-            if (req.url.indexOf(r) != -1 && reqParamCount == routeParamCount && routes[r].method.toUpperCase() == req.method) {
-                return disperse(r, req, res);
-            }
-        }
+    //Try to match regex routes
+    for (r in routes) {
+        let route = routes[r];
+        if (route.regexRoute !== undefined && req.url.match(route.regexRoute) !== null && req.method == route.method)
+            return disperse(route, req, res);
     }
     res.write("404");
     res.end();
 }
+
