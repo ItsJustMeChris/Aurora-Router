@@ -1,9 +1,8 @@
 var qs = require('querystring');
 var routes = [];
+var self = module.exports;
 
 let HTML_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATH'];
-
-var self = module.exports;
 
 HTML_METHODS.forEach((m) => {
     exports[m.toLowerCase()] = (route, action) => {
@@ -81,7 +80,6 @@ exports.handle = (req, res) => {
     //Try to match absolute routes
     for (r in routes) {
         let route = routes[r];
-        console.log(req.url.match(removeQSRegex));
         if ((req.url.match(removeQSRegex) == null ? route.route == req.url : req.url.match(removeQSRegex)[0] == route.route) && req.method == route.method) {
             return extractParams(req, res, route);
         }
