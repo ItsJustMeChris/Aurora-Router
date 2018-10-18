@@ -1,4 +1,12 @@
+var qs = require('querystring');
 var routes = [];
+
+const parseBody = (req, callback) => {
+    var body = '';
+    req.on('data', (data) => body += data);
+    req.on('end', () => callback(qs.parse(body)));
+}
+
 
 exports.route = (route, method, action) => {
     let routeParamRegex = new RegExp(/(\:).*?(?=\/|\/|$)/g);
@@ -21,7 +29,22 @@ exports.getRoutes = () => {
     return routes;
 }
 
-exports.extractParams = (req, route) => {
+const extractParams = (req, res, route) => {
+    if (req.url.includes("?")) {
+        let qsRegex = new RegExp(/(?<=\?).*/g);
+        let qstring = req.url.match(qsRegex);
+        req.params = qs.parse(qstring[0], "&", "=");
+        return disperse(route, req, res);
+    }
+    if (req.method == "POST") {
+        parseBody(req, function (data) {
+            req.params = data;
+            return disperse(route, req, res);
+        });
+
+    } else {
+
+    }
 }
 
 const disperse = (route, req, res) => {
@@ -35,13 +58,15 @@ const disperse = (route, req, res) => {
 }
 
 exports.handle = (req, res) => {
+    let postRegex = new RegExp(/.+?(?=\?)/g);
     req.url = req.url.replace(/\/+$/, "");
-    console.log(req.url);
+
     //Try to match absolute routes
     for (r in routes) {
         let route = routes[r];
-        if (route.route == req.url && req.method == route.method)
-            return disperse(route, req, res);
+        if ((req.url.match(postRegex) == undefined ? route.route == req.url : req.url.match(postRegex)[0] == route.route) && req.method == route.method) {
+            return extractParams(req, res, route);
+        }
     }
 
     //Try to match regex routes
