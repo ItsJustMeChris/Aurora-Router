@@ -1,9 +1,13 @@
-var qs = require('querystring');
+const qs = require('querystring');
+
+const rmvDeliminatorRGX = new RegExp(/\/+$/);
+const self = module.exports;
+
 var routes = [];
-var self = module.exports;
 
 let HTML_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATH'];
 
+//Register each HTML Request Method as a function, ie. router.get(), router.post() ...
 HTML_METHODS.forEach((m) => {
     exports[m.toLowerCase()] = (route, action) => {
         self.route(route, m, action);
@@ -21,17 +25,19 @@ exports.route = (route, method, action) => {
     //Extract parameters (:paramName) from URL. 
     let routeParamRegex = new RegExp(/(\:).*?(?=\/|\/|$)/g);
     //Remove the treading '/' from Routes. IE /user/ = /user..
-    route = route.replace(/\/+$/, "");
+    route = route.replace(rmvDeliminatorRGX, "");
 
     let routeParams = route.match(routeParamRegex);
     let regexRoute = route;
 
     if (routeParams !== null) {
+        let params = [];
         //Replace each (:paramName) with a regex match for all characters. (Should add a method to allow creating own regex for a variable, perhaps parse out regex between [] braces?)
         routeParams.forEach(element => {
+            params.push(element);
             regexRoute = regexRoute.replace(element, "(.*)");
         });
-        routes.push({ regexRoute: regexRoute, route: route, method: method.toUpperCase(), action: action });
+        routes.push({ regexRoute: regexRoute, route: route, method: method.toUpperCase(), action: action, params: params });
     } else {
         routes.push({ route: route, method: method.toUpperCase(), action: action });
     }
@@ -43,7 +49,8 @@ exports.getRoutes = () => {
 
 //Extracting params from URLs
 const extractParams = (req, res, route) => {
-    //If the url is .com/route?p=p&p2=p2
+    req.params = {};
+    //If the url is .com/route?p=p&p2=p2 (GETs?)
     if (req.url.includes("?")) {
         //Regex to extract the 'querystring' from the url.
         let qsRegex = new RegExp(/(?<=\?).*/g);
@@ -56,9 +63,17 @@ const extractParams = (req, res, route) => {
             req.params = data;
             return disperse(route, req, res);
         });
-    } else {
+    }
+
+    if (req.method == "GET" && route.regexRoute !== undefined) {
+        let routeParamMatches = req.url.match(route.regexRoute);
+        for (let i = 0; i < route.params.length; i++) {
+            req.params[route.params[i].replace(":", "")] = routeParamMatches[i + 1];
+        }
         return disperse(route, req, res);
     }
+    console.log("Finished Extract Params, must be no params?");
+    return disperse(route, req, res);
 }
 
 const disperse = (route, req, res) => {
@@ -75,7 +90,7 @@ exports.handle = (req, res) => {
     //Remove 'querystring' from a URL. 
     let removeQSRegex = new RegExp(/.+?(?=\?)/g);
     //Remove trailing / from URL. 
-    req.url = req.url.replace(/\/+$/, "");
+    req.url = req.url.replace(rmvDeliminatorRGX, "");
 
     //Try to match absolute routes
     for (r in routes) {
@@ -88,8 +103,9 @@ exports.handle = (req, res) => {
     //Try to match regex routes
     for (r in routes) {
         let route = routes[r];
-        if (route.regexRoute !== undefined && req.url.match(route.regexRoute) !== null && req.method == route.method)
-            return disperse(route, req, res);
+        if (route.regexRoute !== undefined && req.url.match(route.regexRoute) !== null && req.method == route.method) {
+            return extractParams(req, res, route);
+        }
     }
     //No routes were hit, 404. 
     res.writeHead(404, {
@@ -98,4 +114,3 @@ exports.handle = (req, res) => {
     });
     res.end("404 NOT FOUND");
 }
-
