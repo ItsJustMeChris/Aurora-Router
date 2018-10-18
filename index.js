@@ -3,26 +3,11 @@ var routes = [];
 
 let HTML_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATH'];
 
+var self = module.exports;
+
 HTML_METHODS.forEach((m) => {
     exports[m.toLowerCase()] = (route, action) => {
-        let method = m;
-        //Extract parameters (:paramName) from URL. 
-        let routeParamRegex = new RegExp(/(\:).*?(?=\/|\/|$)/g);
-        //Remove the treading '/' from Routes. IE /user/ = /user..
-        route = route.replace(/\/+$/, "");
-
-        let routeParams = route.match(routeParamRegex);
-        let regexRoute = route;
-
-        if (routeParams !== null) {
-            //Replace each (:paramName) with a regex match for all characters. (Should add a method to allow creating own regex for a variable, perhaps parse out regex between [] braces?)
-            routeParams.forEach(element => {
-                regexRoute = regexRoute.replace(element, "(.*)");
-            });
-            routes.push({ regexRoute: regexRoute, route: route, method: method.toUpperCase(), action: action });
-        } else {
-            routes.push({ route: route, method: method.toUpperCase(), action: action });
-        }
+        self.route(route, m, action);
     }
 });
 
