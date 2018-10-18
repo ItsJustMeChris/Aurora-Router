@@ -23,13 +23,13 @@ const parseBody = (req, callback) => {
 
 exports.route = (route, method, action) => {
     //Extract parameters (:paramName) from URL. 
-    let routeParamRegex = new RegExp(/(\:).*?(?=\/|\/|$)/g);
+    let routeParamRegex = new RegExp(/(\:).*?(?=\/|\/|\-|\.|$)/g);
     //Remove the treading '/' from Routes. IE /user/ = /user..
     route = route.replace(rmvDeliminatorRGX, "");
 
     let routeParams = route.match(routeParamRegex);
     let regexRoute = route;
-
+    regexRoute = regexRoute.replace(".", "\\.");
     if (routeParams !== null) {
         let params = [];
         //Replace each (:paramName) with a regex match for all characters. (Should add a method to allow creating own regex for a variable, perhaps parse out regex between [] braces?)
@@ -67,6 +67,8 @@ const extractParams = (req, res, route) => {
 
     if (req.method == "GET" && route.regexRoute !== undefined) {
         let routeParamMatches = req.url.match(route.regexRoute);
+        console.log(route.regexRoute);
+        console.log(routeParamMatches);
         for (let i = 0; i < route.params.length; i++) {
             req.params[route.params[i].replace(":", "")] = routeParamMatches[i + 1];
         }
