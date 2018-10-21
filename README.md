@@ -1,5 +1,4 @@
-
-
+npm i aurora-router
 
 # Aurora-Router
 Aurora router is still being built. 
