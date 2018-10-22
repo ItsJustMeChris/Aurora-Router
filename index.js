@@ -22,9 +22,11 @@ const parseBody = (req, callback) => {
 exports.route = (route, method, action) => {
     let routeParamRegex = new RegExp(/(\:).*?(?=\/|\/|\-|\.|$)/g);
     route = route.replace(rmvDeliminatorRGX, "");
+    route = route.charAt(0) === "/" ? route : "/" + route;
 
     let routeParams = route.match(routeParamRegex);
     let regexRoute = route;
+
     regexRoute = regexRoute.replace(".", "\\.");
     if (routeParams !== null) {
         let params = [];
@@ -79,6 +81,7 @@ const disperse = (route, req, res) => {
 exports.handle = (req, res) => {
     let removeQSRegex = new RegExp(/.+?(?=\?)/g);
     req.url = req.url.replace(rmvDeliminatorRGX, "");
+
     for (r in routes) {
         let route = routes[r];
         if ((req.url.match(removeQSRegex) == null ? route.route == req.url : req.url.match(removeQSRegex)[0] == route.route) && req.method == route.method) {
