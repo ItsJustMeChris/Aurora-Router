@@ -1,9 +1,9 @@
 const qs = require('querystring');
-
 const rmvDeliminatorRGX = new RegExp(/\/+$/);
 const self = module.exports;
 
 let routes = [];
+let controllerPath = "";
 
 let HTML_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATH'];
 
@@ -72,10 +72,39 @@ const disperse = (route, req, res) => {
     if (typeof route.action === "function") {
         return route.action(req, res);
     } else if (typeof route.action === "string") {
-
+        if (route.action.includes(".")) {
+            let [controllerName, actionName] = route.action.split(".");
+            try {
+                let controller = require(controllerPath + controllerName + ".js");
+                return controller[actionName](req, res);
+            }
+            catch (e) {
+                res.writeHead(500, {
+                    'Content-Length': Buffer.byteLength("Internal Server Error\nRouter: 3"),
+                    'Content-Type': 'text/plain'
+                });
+                res.end("Internal Server Error\nRouter: 3");
+            }
+        } else {
+            res.writeHead(500, {
+                'Content-Length': Buffer.byteLength("Internal Server Error\nRouter: 2"),
+                'Content-Type': 'text/plain'
+            });
+            res.end("Internal Server Error\nRouter: 2");
+        }
     } else if (typeof route.action === "undefined") {
-
+        //Would disperse to hooks, hooking not active yet, instead use callback functions or controllers. 
+    } else {
+        res.writeHead(500, {
+            'Content-Length': Buffer.byteLength("Internal Server Error\nRouter: 1"),
+            'Content-Type': 'text/plain'
+        });
+        res.end("Internal Server Error\nRouter: 1");
     }
+}
+
+exports.setControllerPath = (path) => {
+    controllerPath = path;
 }
 
 exports.handle = (req, res) => {
@@ -95,7 +124,6 @@ exports.handle = (req, res) => {
             return extractParams(req, res, route);
         }
     }
-
     res.writeHead(404, {
         'Content-Length': Buffer.byteLength("404 NOT FOUND"),
         'Content-Type': 'text/plain'

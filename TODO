@@ -1,2 +1,11 @@
 TODO: 
     Regex Routes. 
+
+TODO: 
+    View Routing. 
+
+TODO:
+    Ignore favicon requests by default. 
+
+TODO:
+    Cache controllers for quicker calling.
