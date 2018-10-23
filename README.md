@@ -63,6 +63,7 @@ Planned Implementations:
 
 Example Controller Format:
 (This is a pretty standard method of creating controllers I feel)
+
     //Controller.js
     exports.action = (req, res) => {
         res.write("Controller/action called");
