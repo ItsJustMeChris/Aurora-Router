@@ -3,6 +3,7 @@ const rmvDeliminatorRGX = new RegExp(/\/+$/);
 const self = module.exports;
 
 let routes = [];
+let rMap;
 let controllerPath = "";
 
 let HTML_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATH'];
@@ -28,13 +29,30 @@ exports.route = (route, method, action) => {
     let regexRoute = route;
 
     regexRoute = regexRoute.replace(".", "\\.");
+    regexRoute = regexRoute.replace("-", "\\-");
+
+    if (typeof action === "string") {
+        if (action.includes(".")) {
+            let [controllerName, actionName] = action.split(".");
+            try {
+                let controller = require(controllerPath + controllerName + ".js");
+                if (typeof controller[actionName] === 'undefined') throw new Error('Controller: \'' + controllerName + '\', Action: \'' + actionName + '\' not found.');
+                action = controller[actionName];
+            }
+            catch (e) {
+                throw e;
+            }
+        } else {
+            throw new Error('Invalid input in route action field, unsupported action method or invalid action method expression');
+        }
+    }
+
     if (routeParams !== null) {
-        let params = [];
         routeParams.forEach(element => {
-            params.push(element);
             regexRoute = regexRoute.replace(element, "(.*)");
         });
-        routes.push({ regexRoute: regexRoute, route: route, method: method.toUpperCase(), action: action, params: params });
+
+        routes.push({ regexRoute: regexRoute, route: route, method: method.toUpperCase(), action: action, params: routeParams });
     } else {
         routes.push({ route: route, method: method.toUpperCase(), action: action });
     }
@@ -71,35 +89,8 @@ const extractParams = (req, res, route) => {
 const disperse = (route, req, res) => {
     if (typeof route.action === "function") {
         return route.action(req, res);
-    } else if (typeof route.action === "string") {
-        if (route.action.includes(".")) {
-            let [controllerName, actionName] = route.action.split(".");
-            try {
-                let controller = require(controllerPath + controllerName + ".js");
-                return controller[actionName](req, res);
-            }
-            catch (e) {
-                res.writeHead(500, {
-                    'Content-Length': Buffer.byteLength("Internal Server Error\nRouter: 3"),
-                    'Content-Type': 'text/plain'
-                });
-                res.end("Internal Server Error\nRouter: 3");
-            }
-        } else {
-            res.writeHead(500, {
-                'Content-Length': Buffer.byteLength("Internal Server Error\nRouter: 2"),
-                'Content-Type': 'text/plain'
-            });
-            res.end("Internal Server Error\nRouter: 2");
-        }
-    } else if (typeof route.action === "undefined") {
-        //Would disperse to hooks, hooking not active yet, instead use callback functions or controllers. 
-    } else {
-        res.writeHead(500, {
-            'Content-Length': Buffer.byteLength("Internal Server Error\nRouter: 1"),
-            'Content-Type': 'text/plain'
-        });
-        res.end("Internal Server Error\nRouter: 1");
+    } else if (typeof route.action === 'undefined') {
+        //Hooks
     }
 }
 
@@ -124,6 +115,7 @@ exports.handle = (req, res) => {
             return extractParams(req, res, route);
         }
     }
+
     res.writeHead(404, {
         'Content-Length': Buffer.byteLength("404 NOT FOUND"),
         'Content-Type': 'text/plain'

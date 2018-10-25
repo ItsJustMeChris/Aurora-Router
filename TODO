@@ -6,6 +6,3 @@ TODO:
 
 TODO:
     Ignore favicon requests by default. 
-
-TODO:
-    Cache controllers for quicker calling.

@@ -1,6 +1,6 @@
 {
   "name": "aurora-router",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "Router for Aurora MVC framework",
   "main": "index.js",
   "scripts": {

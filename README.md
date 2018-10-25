@@ -51,7 +51,7 @@ Routing Implementations:
     //router.<HTML_METHOD>('/route', callback);
     //router.route('/route','method', callback);
 
-    //When calling a controller/action in like this, it's important to setup the Controller path, see setControllerPath(path); 
+    //When calling a controller/action like this, it's important to setup the Controller path, see setControllerPath(path); 
     //Case matters since we are requiring a node module without parsing the entire folder upon disperse of the route. 
     //See TODO file as controllers still need a bit more work for a full implementation I can comfortable with. 
     router.get("/route", "Controller.Action");
@@ -70,10 +70,7 @@ Example Controller Format:
         res.end();
     }
 
-Router Errors:
-(These error codes will be displayed upon an HTTP 500 error when the router fails to bind to a route or fails to disperse an action. )
-    Error Codes:
-
-    1: Router failed to find a valid method to disperse route.  
-    2: Router failed with string value for callback, typically this is meant to be a controller and action (Controller.Action), or a view and page (View#Page).  
-    3: Failed to bind to controller, normally the file is not found, meaning the path is incorrect, it's important to note that the router requires the path to end in \\ ("\") or ("/") depending on OS. 
+UPDATE LOG:
+    1.0.9: 
+        Controllers/Actions are now cached.  Reworked some error handling. 
+        Controller error handling handled during app start/route creation/caching.  Validates existance of controller and action before end user gets a server error.  
