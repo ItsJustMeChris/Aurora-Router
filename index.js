@@ -3,7 +3,6 @@ const rmvDeliminatorRGX = new RegExp(/\/+$/);
 const self = module.exports;
 
 let routes = [];
-let rMap;
 let controllerPath = "";
 
 let HTML_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATH'];
@@ -88,10 +87,19 @@ const extractParams = (req, res, route) => {
 
 const disperse = (route, req, res) => {
     if (typeof route.action === "function") {
+        for (let mw in self.middleware) {
+            mw(req, res);
+        }
         return route.action(req, res);
     } else if (typeof route.action === 'undefined') {
         //Hooks
     }
+}
+
+exports.middleware = [];
+
+exports.addMiddleWare = (cb) => {
+    self.middleware.push(cb);
 }
 
 exports.setControllerPath = (path) => {
@@ -100,7 +108,7 @@ exports.setControllerPath = (path) => {
 
 exports.handle = (req, res) => {
     let removeQSRegex = new RegExp(/.+?(?=\?)/g);
-    req.url = req.url.replace(rmvDeliminatorRGX, "");
+    req.url = req.url == "/" ? req.url : req.url.replace(rmvDeliminatorRGX, "");
 
     for (r in routes) {
         let route = routes[r];

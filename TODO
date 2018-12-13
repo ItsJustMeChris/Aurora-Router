@@ -5,4 +5,5 @@ TODO:
     View Routing. 
 
 TODO:
-    Ignore favicon requests by default. 
+    Add MiddleWare. 
+    

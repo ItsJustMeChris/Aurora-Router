@@ -1,6 +1,7 @@
-npm i aurora-router
-
 # Aurora-Router
+    
+    npm i aurora-router
+    
 Aurora router is still being built. 
 
 Aurora Router is the router used for the Aurora Node.js MVC
@@ -20,10 +21,20 @@ Router setup on a Node.JS HTTP server.
     router.setControllerPath("Path\\To\\Controllers\\"); //Currently a trailing "\" or "/" is required, depending on OS. 
 
     http.createServer(function (req, res) {
-        if (req.url != '/favicon.ico') { //Right now the router will not ignore favicon requests by default, I can add it in a near future update.  
+        if (req.url != '/favicon.ico') { 
             router.handle(req, res);
         }
     }).listen(8080);
+
+    //If you want to use router.handle() without a favicon ignore, you will need to handle it like so. 
+    //This can also just be written into the fs.createReadStream('Path/To/Favico').pipe(res) instead of a variable. 
+    const FAVICO = "PATH TO FAVICO";
+
+    router.get('/favicon.ico', (req, res) => {
+        res.setHeader('Content-Type', 'image/x-icon');
+        //Pipe the favicon to the response.  
+        fs.createReadStream(FAVICO).pipe(res);
+    });
 
 Routing Implementations:
 (These methods of making a router are implemented and supported)
@@ -71,6 +82,7 @@ Example Controller Format:
     }
 
 UPDATE LOG:
+
     1.0.9: 
         Controllers/Actions are now cached.  Reworked some error handling. 
         Controller error handling handled during app start/route creation/caching.  Validates existance of controller and action before end user gets a server error.  
