@@ -27,8 +27,7 @@ exports.route = (route, method, action) => {
     let routeParams = route.match(routeParamRegex);
     let regexRoute = route;
 
-    regexRoute = regexRoute.replace(".", "\\.");
-    regexRoute = regexRoute.replace("-", "\\-");
+    regexRoute = regexRoute.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 
     if (typeof action === "string") {
         if (action.includes(".")) {
@@ -55,10 +54,14 @@ exports.route = (route, method, action) => {
     } else {
         routes.push({ route: route, method: method.toUpperCase(), action: action });
     }
-}
 
-exports.getRoutes = () => {
-    return routes;
+    routes.sort((a, b) => {
+        if (a.regexRoute !== undefined) {
+            return 1;
+        } else {
+            return -1;
+        }
+    });
 }
 
 const extractParams = (req, res, route) => {
@@ -113,13 +116,11 @@ exports.handle = (req, res) => {
     for (r in routes) {
         let route = routes[r];
         if ((req.url.match(removeQSRegex) == null ? route.route == req.url : req.url.match(removeQSRegex)[0] == route.route) && req.method == route.method) {
+
             return extractParams(req, res, route);
         }
-    }
-
-    for (r in routes) {
-        let route = routes[r];
         if (route.regexRoute !== undefined && req.url.match(route.regexRoute) !== null && req.method == route.method) {
+
             return extractParams(req, res, route);
         }
     }
