@@ -1,6 +1,9 @@
 const qs = require('querystring');
 const rmvDeliminatorRGX = new RegExp(/\/+$/);
 const self = module.exports;
+const path = require('path');
+const fs = require('fs');
+const mime = require('mime-types')
 
 let routes = [];
 let controllerPath = "";
@@ -109,9 +112,28 @@ exports.setControllerPath = (path) => {
     controllerPath = path;
 }
 
+exports.staticDir = (staticFolder) => {
+    self.staticFolder = staticFolder;
+}
+
+const serveStatic = (req, res, staticFile) => {
+    let mt = mime.lookup(staticFile);
+    if (fs.existsSync(staticFile) && !fs.lstatSync(staticFile).isDirectory() && mt !== false) {
+        res.writeHead(200, { 'Content-type': mt });
+        let data = fs.readFileSync(staticFile, { encoding: 'utf8' });
+        res.write(data);
+        res.end();
+    }
+}
+
+
+
 exports.handle = (req, res) => {
     let removeQSRegex = new RegExp(/.+?(?=\?)/g);
     req.url = req.url == "/" ? req.url : req.url.replace(rmvDeliminatorRGX, "");
+    let staticFile = path.join(self.staticFolder, '..', req.url)
+
+    serveStatic(req, res, staticFile);
 
     for (r in routes) {
         let route = routes[r];

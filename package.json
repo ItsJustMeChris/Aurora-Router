@@ -1,21 +1,56 @@
 {
-  "name": "aurora-router",
-  "version": "1.0.11",
-  "description": "Router for Aurora MVC framework",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "_from": "aurora-router",
+  "_id": "aurora-router@1.0.11",
+  "_inBundle": false,
+  "_integrity": "sha512-W5qr50f+nL9zQc1Rz01LgshREtwKlItiV1YYxOY3r2sb10bMiBVVbWqJQggeLnMEHguvVdE983JZSn4vF6t2hg==",
+  "_location": "/aurora-router",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "aurora-router",
+    "name": "aurora-router",
+    "escapedName": "aurora-router",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
   },
-  "author": "ItsJustMeChris",
-  "license": "MIT",
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/aurora-router/-/aurora-router-1.0.11.tgz",
+  "_shasum": "91a7ab4137ba8b3414cbcca2468a26e0b3b4259b",
+  "_spec": "aurora-router",
+  "_where": "C:\\Users\\Chris\\Desktop\\Programming\\NodeJS\\Web Development\\Aurora-Blog",
+  "author": {
+    "name": "ItsJustMeChris"
+  },
+  "bugs": {
+    "url": "https://github.com/ItsJustMeChris/Aurora-Router/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "Router for Aurora MVC framework",
+  "homepage": "https://github.com/ItsJustMeChris/Aurora-Router#readme",
   "keywords": [
     "router",
     "back-end",
     "back end",
     "routes"
   ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "aurora-router",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ItsJustMeChris/Aurora-Router"
+    "url": "git+https://github.com/ItsJustMeChris/Aurora-Router.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.0.13",
+  "dependencies": {
+    "mime-types": "^2.1.21"
   }
 }

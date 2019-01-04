@@ -67,6 +67,11 @@ Routing Implementations:
     //See TODO file as controllers still need a bit more work for a full implementation I can comfortable with. 
     router.get("/route", "Controller.Action");
 
+Serving Static Files:
+    router.staticDir(path.join(__dirname, '..', 'views', 'assets'));
+    //Inside of HTML just simply link them as so
+    <link rel="stylesheet" href="./assets/css/main.css">
+
 Planned Implementations:
 (These are not currently finished, but are planned)
 
@@ -82,7 +87,8 @@ Example Controller Format:
     }
 
 UPDATE LOG:
-
+    1.0.13:
+        Static file serving. 
     1.0.9: 
         Controllers/Actions are now cached.  Reworked some error handling. 
         Controller error handling handled during app start/route creation/caching.  Validates existance of controller and action before end user gets a server error.  
