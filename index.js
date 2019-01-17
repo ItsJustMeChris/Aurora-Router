@@ -8,7 +8,7 @@ const mime = require('mime-types')
 let routes = [];
 let controllerPath = "";
 
-let HTML_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATH'];
+let HTML_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATH', 'ALL'];
 
 HTML_METHODS.forEach((m) => {
     exports[m.toLowerCase()] = (route, action) => {
@@ -120,13 +120,11 @@ const serveStatic = (req, res, staticFile) => {
     let mt = mime.lookup(staticFile);
     if (fs.existsSync(staticFile) && !fs.lstatSync(staticFile).isDirectory() && mt !== false) {
         res.writeHead(200, { 'Content-type': mt });
-        let data = fs.readFileSync(staticFile, { encoding: 'utf8' });
+        let data = fs.readFileSync(staticFile);
         res.write(data);
         res.end();
     }
 }
-
-
 
 exports.handle = (req, res) => {
     let removeQSRegex = new RegExp(/.+?(?=\?)/g);
@@ -137,11 +135,11 @@ exports.handle = (req, res) => {
 
     for (r in routes) {
         let route = routes[r];
-        if ((req.url.match(removeQSRegex) == null ? route.route == req.url : req.url.match(removeQSRegex)[0] == route.route) && req.method == route.method) {
+        if ((req.url.match(removeQSRegex) == null ? route.route == req.url : req.url.match(removeQSRegex)[0] == route.route) && (req.method == route.method || route.method == "ALL")) {
 
             return extractParams(req, res, route);
         }
-        if (route.regexRoute !== undefined && req.url.match(route.regexRoute) !== null && req.method == route.method) {
+        if (route.regexRoute !== undefined && req.url.match(route.regexRoute) !== null && (req.method == route.method || route.method == "ALL")) {
 
             return extractParams(req, res, route);
         }
