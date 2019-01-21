@@ -29,34 +29,22 @@ const parseBody = (req, callback) => {
 
 exports.route = (route, method, action) => {
   const routeParamRegex = new RegExp(/(:).*?(?=\/|\/|-|\.|$)/g);
-  let r = route;
-  r = r.replace(rmvDeliminatorRGX, '');
-  r = r.charAt(0) === '/' ? r : `/${r}`;
+  const r = route.replace(rmvDeliminatorRGX, '').charAt(0) === '/' ? route : `/${route}`;
 
-  const params = r.match(routeParamRegex);
-  let regexRoute = r;
+  const params = r.match(routeParamRegex) || [];
+  let regexRoute = r.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 
-  regexRoute = regexRoute.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+  params.forEach((element) => {
+    regexRoute = regexRoute.replace(element, '(.*)');
+  });
 
-  if (params !== null) {
-    params.forEach((element) => {
-      regexRoute = regexRoute.replace(element, '(.*)');
-    });
-
-    routes.push({
-      regexRoute,
-      route,
-      method: method.toUpperCase(),
-      action,
-      params,
-    });
-  } else {
-    routes.push({
-      route,
-      method: method.toUpperCase(),
-      action,
-    });
-  }
+  routes.push({
+    regexRoute,
+    route,
+    method: method.toUpperCase(),
+    action,
+    params,
+  });
 
   routes.sort((a) => {
     if (a.regexRoute !== undefined) {
