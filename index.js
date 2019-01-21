@@ -6,6 +6,7 @@ const mime = require('mime-types');
 const rmvDeliminatorRGX = new RegExp(/\/+$/);
 const removeQSRegex = new RegExp(/.+?(?=\?)/g);
 const qsRegex = new RegExp(/(?<=\?).*/g);
+const routeParamRegex = new RegExp(/(:).*?(?=\/|\/|-|\.|$)/g);
 
 const self = module.exports;
 
@@ -28,11 +29,10 @@ const parseBody = (req, callback) => {
 };
 
 exports.route = (route, method, action) => {
-  const routeParamRegex = new RegExp(/(:).*?(?=\/|\/|-|\.|$)/g);
   const r = route.replace(rmvDeliminatorRGX, '').charAt(0) === '/' ? route : `/${route}`;
 
   const params = r.match(routeParamRegex) || [];
-  let regexRoute = r.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+  let regexRoute = params.length > 0 ? r.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') : undefined;
 
   params.forEach((element) => {
     regexRoute = regexRoute.replace(element, '(.*)');
@@ -107,16 +107,27 @@ const serveStatic = (req, res, staticFile) => {
   }
 };
 
+const testQS = (url, route) => {
+  return url.match(removeQSRegex) == null
+    ? route.route === url : url.match(removeQSRegex)[0] === route.route;
+};
+
+const testMethod = (req, route) => req.method === route.method || route.method === 'ALL';
+
+const testRouteRegex = (url, route) => {
+  return route.regexRoute !== undefined && url.match(route.regexRoute) !== null;
+};
+
 exports.handle = (req, res) => {
-  req.url = req.url.replace(rmvDeliminatorRGX, '') === '' ? '/' : req.url.replace(rmvDeliminatorRGX, '');
-  const staticFile = path.join(self.staticFolder, '..', req.url);
+  const url = req.url.replace(rmvDeliminatorRGX, '') === '' ? '/' : req.url.replace(rmvDeliminatorRGX, '');
+  const staticFile = path.join(self.staticFolder, '..', url);
   serveStatic(req, res, staticFile);
   for (let i = 0; i < routes.length; i += 1) {
     const route = routes[i];
-    if ((req.url.match(removeQSRegex) == null ? route.route === req.url : req.url.match(removeQSRegex)[0] === route.route) && (req.method === route.method || route.method === 'ALL')) {
+    if (testQS(url, route) && testMethod(req, route)) {
       return extractParams(req, res, route);
     }
-    if (route.regexRoute !== undefined && req.url.match(route.regexRoute) !== null && (req.method === route.method || route.method === 'ALL')) {
+    if (testRouteRegex(url, route) && testMethod(req, route)) {
       return extractParams(req, res, route);
     }
   }
