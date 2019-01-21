@@ -111,24 +111,18 @@ exports.handle = (req, res) => {
   req.url = req.url.replace(rmvDeliminatorRGX, '') === '' ? '/' : req.url.replace(rmvDeliminatorRGX, '');
   const staticFile = path.join(self.staticFolder, '..', req.url);
   serveStatic(req, res, staticFile);
-  let hit = false;
-  routes.forEach((route) => {
+  for (let i = 0; i < routes.length; i += 1) {
+    const route = routes[i];
     if ((req.url.match(removeQSRegex) == null ? route.route === req.url : req.url.match(removeQSRegex)[0] === route.route) && (req.method === route.method || route.method === 'ALL')) {
-      hit = true;
       return extractParams(req, res, route);
     }
     if (route.regexRoute !== undefined && req.url.match(route.regexRoute) !== null && (req.method === route.method || route.method === 'ALL')) {
-      hit = true;
       return extractParams(req, res, route);
     }
-    return route;
-  });
-  if (!hit) {
-    res.writeHead(404, {
-      'Content-Length': Buffer.byteLength('404 NOT FOUND'),
-      'Content-Type': 'text/plain',
-    });
-    return res.end('404 NOT FOUND');
   }
-  return true;
+  res.writeHead(404, {
+    'Content-Length': Buffer.byteLength('404 NOT FOUND'),
+    'Content-Type': 'text/plain',
+  });
+  return res.end('404 NOT FOUND');
 };
